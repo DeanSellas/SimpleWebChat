@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Webchat</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+        crossorigin="anonymous"></script>
+</head>
+<body>
+    
+    <div id="messages" style="border: 1px black solid; height: 500px; width: 500px; overflow-y: scroll">
+    </div>
+    <div>
+        <input id="userMessage" type="text">
+        <button id="sendMessage" type="button">Send Message</button>
+    </div>
+
+    <script type="text/javascript">
+        let socket;
+        var username = "";
+
+        $(document).ready(function(){
+
+            // keep prompting user for a username until one is provided.
+            // WHILE username EQUALS "" OR username is undefined
+            while(username === "" || username === undefined){
+                username = prompt("What is your name?");
+            }
+
+            // assign the socket variable to a new websocket
+            socket = new WebSocket(`ws://${location.host}`);
+
+            // if there is an error log it
+            socket.onerror = function () {
+                console.error("Socket Creation Failed!");
+            }
+
+            // if the socket opens successfully, log it to console.
+            socket.onopen = function () {
+                console.log('WebSocket connection established');
+            }
+
+            // on message receive run this code
+            socket.onmessage = function (message) {
+                var message = message.data;
+                // append message to the message box.
+                // <span> is a HTML data type, allows the browser to display the information in the correct way
+                // <br/> is a HTML data type that tells the browser to add a new line. This allows the messages to be spaced properly
+                $("#messages").append(`<span>${message}</span><br/>`);
+
+                // log the message to the console
+                console.log(message);
+            }
+
+            // On socket close, log to console
+            socket.onclose = function () {
+                console.log("closing socket");
+            }
+        });
+
+        // when send message button is clicked do this
+        $("#sendMessage").click(function(){
+
+            // assign the message variable to the value inside the message text box
+            var message = $("#userMessage").val();
+            // send the message to the server
+            socket.send(`${username}: ${message}`);
+        });
+
+    </script>
+</body>
+</html>
